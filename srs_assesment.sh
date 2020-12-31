@@ -67,9 +67,16 @@ ansible-playbook doc-com-playbook.yml -i host
 sleep 1
 
 echo "docker swarm join-token worker" > get_token.sh
+
+mmm=$PWD"/tr/modules/ec2/mykey"
+
 head -1 public_ips1.txt | awk '{print "ssh -i '$mmm' -l ubuntu "$1" < get_token.sh " }'  > add_wo.sh
-tail -2 add_wo.sh > add_wo1.sh
-tail -4 hosts | awk '{print "ssh -i '$mmm' -l ubuntu "$1" < add_wo1.sh " }'  > add_nodes.sh
+
+sh add_wo.sh  > add_wo1.sh
+
+tail -2 add_wo1.sh > add_wo2.sh
+
+tail -4 hosts | awk '{print "ssh -i '$mmm' -l ubuntu "$1" < add_wo2.sh " }'  > add_nodes.sh
 
 ##  adding nodes to swarm
 sh add_nodes.sh
