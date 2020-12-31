@@ -27,6 +27,8 @@ sudo apt-get install python-pip -y  ;  sleep 1 ; pip install awscli  ; sleep 1 ;
 
 cd tr
 
+chmod 600 modules/ec2/mykey*
+
 terraform init
 terraform get
 sleep 1
@@ -35,12 +37,12 @@ terraform apply -auto-approve
 ## get the public IPs of instances
 cd ..
 aws  ec2 describe-instances --filters "Name=instance-state-name,Values=running"  --query 'Reservations[*].Instances[*].[PublicIpAddress]' --output text > public_ips.txt
-
+tail -5 public_ips.txt > public_ips1.txt
 # add all instances to known_hosts so that we do not get issues while running ansible
-cat public_ips.txt | awk '{ print "ssh-keyscan -H "$1" >> ~/.ssh/known_hosts" }'   > add_host.sh
+cat public_ips1.txt | awk '{ print "ssh-keyscan -H "$1" >> ~/.ssh/known_hosts" }'   > add_host.sh
 sh add_host.sh
 
-cat public_ips.txt > hosts
+cat public_ips1.txt > hosts
 
 mmm=$PWD"/tr/modules/ec2/mykey"
 
@@ -65,7 +67,7 @@ ansible-playbook doc-com-playbook.yml -i host
 sleep 1
 
 echo "docker swarm join-token worker" > get_token.sh
-head -1 public_ips.txt | awk '{print "ssh -i '$mmm' -l ubuntu "$1" < get_token.sh " }'  > add_wo.sh
+head -1 public_ips1.txt | awk '{print "ssh -i '$mmm' -l ubuntu "$1" < get_token.sh " }'  > add_wo.sh
 tail -2 add_wo.sh > add_wo1.sh
 tail -4 hosts | awk '{print "ssh -i '$mmm' -l ubuntu "$1" < add_wo1.sh " }'  > add_nodes.sh
 
