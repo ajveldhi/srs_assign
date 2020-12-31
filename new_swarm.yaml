@@ -1,0 +1,10 @@
+---
+- hosts: docker[0]
+  become: true
+
+  tasks:
+
+    - name:  Init a new swarm with default parameters
+      community.general.docker_swarm:
+        state: present
+
